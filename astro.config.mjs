@@ -1,24 +1,17 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
-import node from '@astrojs/node';
-import tina from '@tinacms/astro/integration';
-import { tinaAdminDevRedirect } from '@tinacms/astro/vite';
+import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
   output: 'server',
-  adapter: node({ mode: 'standalone' }),
+  adapter: cloudflare(),
   vite: {
     plugins: [
-      tailwindcss(),
-      tinaAdminDevRedirect()
-    ],
-    ssr: {
-      noExternal: ['@tinacms/astro', '@tinacms/bridge']
-    }
+      tailwindcss()
+    ]
   },
   integrations: [
-    mdx(),
-    tina()
+    mdx()
   ]
 });
