@@ -1,13 +1,13 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
-import vercel from '@astrojs/vercel';
+import node from '@astrojs/node';
 import tina from '@tinacms/astro/integration';
 import { tinaAdminDevRedirect } from '@tinacms/astro/vite';
 
 export default defineConfig({
   output: 'server',
-  adapter: vercel(),
+  adapter: node({ mode: 'standalone' }),
   vite: {
     plugins: [
       tailwindcss(),
