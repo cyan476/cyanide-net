@@ -2,8 +2,7 @@
 import { ClientRouter } from 'astro:transitions';
 import avatarImg from '../assets/avatar.jpg';
 import bgImg from '../assets/background.jpg';
-import tvMusicFile from '../assets/mii_vtele.wav';
-import padMusicFile from '../assets/mii_vpad.wav';
+import partyMusicFile from '../assets/party.mp3';
 
 interface Props {
 	title: string;
@@ -51,9 +50,8 @@ const { title, lastUpdated = "18/07/2026", version = "v1.0" } = Astro.props;
 	</head>
 	<body style={`margin: 0; background-image: url(${bgImg.src}); background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh; display: flex; flex-direction: column;`}>
 		
-		{/* Dual Hidden Audio Players for TV and GamePad streams with native loop points calculated */}
-		<audio id="tv-music" src={tvMusicFile} transition:persist></audio>
-		<audio id="pad-music" src={padMusicFile} transition:persist></audio>
+		{/* Single Persistent Audio Player */}
+		<audio id="bg-music" src={partyMusicFile} loop transition:persist></audio>
 
 		{/* Entrance Overlay Screen (persists so it doesn't pop back up when clicking links) */}
 		<div id="entrance-overlay" transition:persist style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; transition: opacity 0.5s ease;">
@@ -66,56 +64,18 @@ const { title, lastUpdated = "18/07/2026", version = "v1.0" } = Astro.props;
 			function initSite() {
 				const enterBtn = document.getElementById('enter-btn');
 				const overlay = document.getElementById('entrance-overlay');
-				const tvMusic = document.getElementById('tv-music');
-				const padMusic = document.getElementById('pad-music');
+				const bgMusic = document.getElementById('bg-music');
 				const volumeSlider = document.getElementById('volume-slider');
-
-				const loopStart = 3.136;
-				const loopEnd = 75.5169;
-				
-				// Optional offset if your pad music file has a slightly different natural start point relative to TV
-				const padTimeOffset = 1.792; // difference between 4.928 and 3.136
 
 				const savedVolume = localStorage.getItem('player_volume');
 				const initialVol = savedVolume !== null ? parseFloat(savedVolume) : 0.25;
 
 				if (volumeSlider) volumeSlider.value = initialVol.toString();
-				if (tvMusic) tvMusic.volume = initialVol;
-				if (padMusic) padMusic.volume = initialVol;
+				if (bgMusic) bgMusic.volume = initialVol;
 
 				const hasEntered = sessionStorage.getItem('site-entered') === 'true';
-
-				if (!hasEntered) {
-					if (tvMusic) { tvMusic.pause(); tvMusic.currentTime = 0; }
-					if (padMusic) { padMusic.pause(); padMusic.currentTime = 0; }
-				}
-
-				// High-precision Master/Slave loop & sync engine
-				let animationFrameId;
-				function checkLoops() {
-					const entered = sessionStorage.getItem('site-entered') === 'true';
-					
-					if (tvMusic && padMusic && !tvMusic.paused && entered) {
-						// 1. Handle Master loop point
-						if (tvMusic.currentTime >= loopEnd) {
-							tvMusic.currentTime = loopStart;
-							padMusic.currentTime = loopStart + padTimeOffset;
-						}
-
-						// 2. Continuous drift correction (if they drift by more than 35 milliseconds, snap slave to master)
-						const expectedPadTime = tvMusic.currentTime + padTimeOffset;
-						if (Math.abs(padMusic.currentTime - expectedPadTime) > 0.035) {
-							padMusic.currentTime = expectedPadTime;
-						}
-					}
-					animationFrameId = requestAnimationFrame(checkLoops);
-				}
-				
-				cancelAnimationFrame(window._loopFrameId);
-				window._loopFrameId = requestAnimationFrame(checkLoops);
-
 				const isReloaded = sessionStorage.getItem('is-reloaded') === 'true';
-				
+
 				if (hasEntered) {
 					if (overlay) overlay.style.display = 'none';
 				} else if (!isReloaded && overlay) {
@@ -124,8 +84,7 @@ const { title, lastUpdated = "18/07/2026", version = "v1.0" } = Astro.props;
 				} else if (isReloaded && overlay) {
 					overlay.style.display = 'flex';
 					overlay.style.opacity = '1';
-					if (tvMusic) tvMusic.pause();
-					if (padMusic) padMusic.pause();
+					if (bgMusic) bgMusic.pause();
 				}
 
 				if (enterBtn) {
@@ -137,17 +96,9 @@ const { title, lastUpdated = "18/07/2026", version = "v1.0" } = Astro.props;
 
 						const currentVol = volumeSlider ? parseFloat(volumeSlider.value) : 0.25;
 
-						if (tvMusic && padMusic) {
-							tvMusic.volume = currentVol;
-							padMusic.volume = currentVol;
-							
-							tvMusic.currentTime = loopStart;
-							padMusic.currentTime = loopStart + padTimeOffset;
-							
-							Promise.all([
-								tvMusic.play(),
-								padMusic.play()
-							]).catch(e => console.log("Audio play blocked:", e));
+						if (bgMusic) {
+							bgMusic.volume = currentVol;
+							bgMusic.play().catch(e => console.log("Audio play blocked:", e));
 						}
 
 						if (overlay) {
@@ -160,14 +111,16 @@ const { title, lastUpdated = "18/07/2026", version = "v1.0" } = Astro.props;
 					});
 				}
 
-				volumeSlider?.addEventListener('input', (e) => {
-					const target = e.target;
-					const vol = parseFloat(target.value);
-					localStorage.setItem('player_volume', vol.toString());
+				if (volumeSlider && !volumeSlider.dataset.listenerAttached) {
+					volumeSlider.dataset.listenerAttached = 'true';
+					volumeSlider.addEventListener('input', (e) => {
+						const target = e.target;
+						const vol = parseFloat(target.value);
+						localStorage.setItem('player_volume', vol.toString());
 
-					if (tvMusic) tvMusic.volume = vol;
-					if (padMusic) padMusic.volume = vol;
-				});
+						if (bgMusic) bgMusic.volume = vol;
+					});
+				}
 			}
 
 			initSite();

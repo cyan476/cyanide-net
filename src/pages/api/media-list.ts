@@ -1,27 +1,49 @@
 import type { APIRoute } from 'astro';
-import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { AwsClient } from 'aws4fetch';
 
-const S3 = new S3Client({
+const s3 = new AwsClient({
+  accessKeyId: import.meta.env.R2_ACCESS_KEY_ID || '',
+  secretAccessKey: import.meta.env.R2_SECRET_ACCESS_KEY || '',
   region: import.meta.env.IDRIVE_REGION || 'us-west-4',
-  endpoint: import.meta.env.IDRIVE_ENDPOINT,
-  credentials: {
-    accessKeyId: import.meta.env.R2_ACCESS_KEY_ID || '',
-    secretAccessKey: import.meta.env.R2_SECRET_ACCESS_KEY || '',
-  },
-  forcePathStyle: true,
+  service: 's3',
 });
 
 export const GET: APIRoute = async () => {
   try {
     const bucketName = import.meta.env.R2_BUCKET_NAME;
-    const command = new ListObjectsV2Command({ Bucket: bucketName });
-    const response = await S3.send(command);
-    const files = response.Contents || [];
+    const endpoint = import.meta.env.IDRIVE_ENDPOINT.replace(/\/$/, ''); // Remove trailing slash if present
+    
+    // 1. List objects in the bucket
+    const listUrl = `${endpoint}/${bucketName}?list-type=2`;
+    const listResponse = await s3.fetch(listUrl);
+    
+    if (!listResponse.ok) {
+      throw new Error(`Failed to list objects: ${listResponse.statusText}`);
+    }
 
-    // Generate a temporary signed download URL valid for 1 hour for every file
-    const mediaItems = await Promise.all(files.map(async (file) => {
-      const key = file.Key || '';
+    const xmlText = await listResponse.text();
+
+    // Lightweight regex-based XML parsing to extract keys and sizes without heavy dependencies
+    const contents: { key: string; size: number }[] = [];
+    const itemRegex = /<Contents>([\s\S]*?)<\/Contents>/g;
+    let match;
+
+    while ((match = itemRegex.exec(xmlText)) !== null) {
+      const itemContent = match[1];
+      const keyMatch = /<Key>(.*?)<\/Key>/.exec(itemContent);
+      const sizeMatch = /<Size>(.*?)<\/Size>/.exec(itemContent);
+      
+      if (keyMatch) {
+        contents.push({
+          key: decodeURIComponent(keyMatch[1]),
+          size: sizeMatch ? parseInt(sizeMatch[1], 10) : 0,
+        });
+      }
+    }
+
+    // 2. Generate pre-signed URLs (valid for 1 hour using aws4fetch signPoint)
+    const mediaItems = await Promise.all(contents.map(async (file) => {
+      const key = file.key;
       const ext = key.split('.').pop()?.toLowerCase() || '';
       
       let category = 'document';
@@ -42,16 +64,19 @@ export const GET: APIRoute = async () => {
         type = 'audio';
       }
 
-      const getCommand = new GetObjectCommand({ Bucket: bucketName, Key: key });
-      const signedUrl = await getSignedUrl(S3, getCommand, { expiresIn: 3600 }); // 1 hour expiration
+      // Generate a presigned URL valid for 3600 seconds (1 hour)
+      const objectUrl = `${endpoint}/${bucketName}/${encodeURIComponent(key).replace(/%2F/g, '/')}`;
+      const signed = await s3.sign(new Request(objectUrl, { method: 'GET' }), { 
+        aws: { signQuery: true, expires: 3600 } 
+      });
 
       return {
         name: key,
-        url: signedUrl,
+        url: signed.url,
         category,
         icon,
         type,
-        size: file.Size ? Math.round(file.Size / 1024 / 1024 * 100) / 100 + ' MB' : 'Unknown'
+        size: file.size ? Math.round(file.size / 1024 / 1024 * 100) / 100 + ' MB' : 'Unknown'
       };
     }));
 
