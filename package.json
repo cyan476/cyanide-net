@@ -10,7 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "postinstall": "tinacms build"
+    "postinstall": "TINA_PUBLIC_CLIENT_ID=dummy TINA_TOKEN=dummy tinacms build"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",
