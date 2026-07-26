@@ -9,7 +9,8 @@
     "dev": "tinacms dev -c \"astro dev\"",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "postinstall": "tinacms build"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",
