@@ -1,11 +1,11 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
-import cloudflare from '@astrojs/cloudflare';
+import netlify from '@astrojs/netlify';
 
 export default defineConfig({
   output: 'server',
-  adapter: cloudflare(),
+  adapter: netlify(),
   vite: {
     plugins: [
       tailwindcss()
