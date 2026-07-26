@@ -70,10 +70,11 @@ const { title, lastUpdated = "18/07/2026", version = "v1.0" } = Astro.props;
 				const padMusic = document.getElementById('pad-music');
 				const volumeSlider = document.getElementById('volume-slider');
 
-				const tvLoopStart = 3.136;
-				const tvLoopEnd = 75.5169;
-				const padLoopStart = 4.928;
-				const padLoopEnd = 77.30896;
+				const loopStart = 3.136;
+				const loopEnd = 75.5169;
+				
+				// Optional offset if your pad music file has a slightly different natural start point relative to TV
+				const padTimeOffset = 1.792; // difference between 4.928 and 3.136
 
 				const savedVolume = localStorage.getItem('player_volume');
 				const initialVol = savedVolume !== null ? parseFloat(savedVolume) : 0.25;
@@ -89,25 +90,27 @@ const { title, lastUpdated = "18/07/2026", version = "v1.0" } = Astro.props;
 					if (padMusic) { padMusic.pause(); padMusic.currentTime = 0; }
 				}
 
-				// High-precision loop checker using requestAnimationFrame instead of ontimeupdate
+				// High-precision Master/Slave loop & sync engine
 				let animationFrameId;
 				function checkLoops() {
 					const entered = sessionStorage.getItem('site-entered') === 'true';
 					
-					if (tvMusic && !tvMusic.paused && entered) {
-						if (tvMusic.currentTime >= tvLoopEnd) {
-							tvMusic.currentTime = tvLoopStart;
+					if (tvMusic && padMusic && !tvMusic.paused && entered) {
+						// 1. Handle Master loop point
+						if (tvMusic.currentTime >= loopEnd) {
+							tvMusic.currentTime = loopStart;
+							padMusic.currentTime = loopStart + padTimeOffset;
 						}
-					}
-					if (padMusic && !padMusic.paused && entered) {
-						if (padMusic.currentTime >= padLoopEnd) {
-							padMusic.currentTime = padLoopStart;
+
+						// 2. Continuous drift correction (if they drift by more than 35 milliseconds, snap slave to master)
+						const expectedPadTime = tvMusic.currentTime + padTimeOffset;
+						if (Math.abs(padMusic.currentTime - expectedPadTime) > 0.035) {
+							padMusic.currentTime = expectedPadTime;
 						}
 					}
 					animationFrameId = requestAnimationFrame(checkLoops);
 				}
 				
-				// Start the high-precision loop listener
 				cancelAnimationFrame(window._loopFrameId);
 				window._loopFrameId = requestAnimationFrame(checkLoops);
 
@@ -138,8 +141,8 @@ const { title, lastUpdated = "18/07/2026", version = "v1.0" } = Astro.props;
 							tvMusic.volume = currentVol;
 							padMusic.volume = currentVol;
 							
-							tvMusic.currentTime = tvLoopStart; // Jump straight to loop start or 0
-							padMusic.currentTime = padLoopStart;
+							tvMusic.currentTime = loopStart;
+							padMusic.currentTime = loopStart + padTimeOffset;
 							
 							Promise.all([
 								tvMusic.play(),
