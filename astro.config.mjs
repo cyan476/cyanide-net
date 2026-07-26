@@ -1,11 +1,11 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
-import node from '@astrojs/node';
 
 export default defineConfig({
-  output: 'server',
-  adapter: node({ mode: 'standalone' }),
+  // Leave output as static (default)
+  site: 'https://cyan476.github.io',
+  base: '/cyanide-net', // Must match your exact repository name!
   vite: {
     plugins: [tailwindcss()]
   },
