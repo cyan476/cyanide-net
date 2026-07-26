@@ -1,0 +1,22 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const posts = await getCollection('post');
+  return posts.map(post => ({
+    params: { id: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+
+if (!post) {
+  return Astro.redirect('/404');
+}
+
+const { Content } = await render(post);
+---

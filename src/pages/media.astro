@@ -1,0 +1,189 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="explorer.exe - cyanide.net!" lastUpdated="26/07/2026" version=v1.5>
+    <div style="width: 100%; max-width: 1050px; margin: 0 auto; background: #f0f0f0; border: 1px solid #707070; border-radius: 6px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif;">
+        
+        {/* Window Title Bar */}
+        <div style="background: linear-gradient(to bottom, #ffffff 0%, #e1e1e1 100%); padding: 8px 12px; border-bottom: 1px solid #adadad; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1e1e1e; font-weight: 600;">
+                <span id="window-path">📁 Libraries \ Media Vault</span>
+            </div>
+            <div style="display: flex; gap: 4px;">
+                <span style="border: 1px solid #aeaeae; background: #e5e5e5; padding: 0 8px; font-size: 12px; cursor: pointer; border-radius: 2px;">_</span>
+                <span style="border: 1px solid #aeaeae; background: #e5e5e5; padding: 0 8px; font-size: 12px; cursor: pointer; border-radius: 2px;">□</span>
+                <span style="border: 1px solid #e76c6c; background: #e81123; color: white; padding: 0 8px; font-size: 12px; cursor: pointer; border-radius: 2px;">×</span>
+            </div>
+        </div>
+
+        {/* Explorer Toolbar */}
+        <div style="background: #ececec; padding: 6px 12px; border-bottom: 1px solid #d0d0d0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #333;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span style="cursor: pointer; color: #003399;">🠐 Organize</span>
+                <span style="cursor: pointer; color: #003399;">Include in library</span>
+                <span style="cursor: pointer; color: #003399;">Share with</span>
+                <span style="cursor: pointer; color: #003399;">New folder</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="color: #666;">Filter view:</span>
+                <span id="current-filter-label" style="font-weight: 600; color: #003399;">All Items</span>
+            </div>
+        </div>
+
+        {/* Main Body Grid */}
+        <div style="display: flex; height: 480px; background: white;">
+            
+            {/* Left Navigation Pane with Functional Click Handlers */}
+            <div style="width: 220px; background: #f2f5f8; border-right: 1px solid #d0d0d0; padding: 12px; box-sizing: border-box; font-size: 13px; color: #333; overflow-y: auto;">
+                <div style="font-weight: bold; color: #555; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">Favorites</div>
+                <ul style="list-style: none; padding: 0; margin: 0 0 16px 0; display: flex; flex-direction: column; gap: 4px;">
+                    <li class="nav-item" data-category="all" style="padding: 3px 6px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 6px;"><span style="color: #e5a800;">⭐</span> Desktop (All)</li>
+                    <li class="nav-item" data-category="video" style="padding: 3px 6px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 6px;"><span style="color: #0078d7;">📥</span> Downloads</li>
+                    <li class="nav-item" data-category="image" style="padding: 3px 6px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 6px;"><span style="color: #0078d7;">🕒</span> Recent Places</li>
+                </ul>
+
+                <div style="font-weight: bold; color: #555; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">Libraries</div>
+                <ul style="list-style: none; padding: 0; margin: 0 0 16px 0; display: flex; flex-direction: column; gap: 4px;">
+                    <li class="nav-item" data-category="document" style="padding: 3px 6px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 6px;">📄 Documents</li>
+                    <li class="nav-item" data-category="audio" style="padding: 3px 6px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 6px;">🎵 Music</li>
+                    <li class="nav-item" data-category="image" style="padding: 3px 6px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 6px;">🖼️ Pictures</li>
+                    <li class="nav-item" data-category="video" style="padding: 3px 6px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 6px;">🎬 Videos</li>
+                </ul>
+
+                <div style="font-weight: bold; color: #555; margin-bottom: 6px; font-size: 11px; text-transform: uppercase;">Computer</div>
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+                    <li class="nav-item" data-category="all" style="padding: 3px 6px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 6px;">💻 Local Disk (C:)</li>
+                    <li class="nav-item active-nav" data-category="all" style="padding: 3px 6px; background: #cce8ff; border: 1px solid #99d1ff; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;">💽 IDrive Node <span style="font-size: 10px; color: #666; margin-left: auto;">(E2)</span></li>
+                </ul>
+            </div>
+
+            {/* Right Content Area */}
+            <div style="flex: 1; padding: 20px; background: white; display: flex; flex-direction: column; overflow-y: auto;">
+                <p id="folder-description" style="font-size: 12px; color: #666; margin-top: 0; margin-bottom: 16px;">Loading media files from IDrive e2 bucket...</p>
+
+                {/* File Grid Container */}
+                <div id="file-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+                    {/* Dynamically populated via client-side script */}
+                </div>
+            </div>
+
+        </div>
+
+        {/* Window Status Bar */}
+        <div style="background: #f0f0f0; border-top: 1px solid #d0d0d0; padding: 4px 12px; font-size: 11px; color: #555; display: flex; justify-content: space-between;">
+            <span id="item-count">0 items</span>
+            <span>IDrive://connected</span>
+        </div>
+
+    </div>
+</Layout>
+
+<script>
+    interface MediaItem {
+        name: string;
+        url: string;
+        category: string;
+        icon: string;
+        type: string;
+        size: string;
+    }
+
+    let allMediaItems: MediaItem[] = [];
+
+    async function initMediaExplorer() {
+        const fileContainer = document.getElementById('file-container');
+        const folderDesc = document.getElementById('folder-description');
+        const itemCount = document.getElementById('item-count');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        try {
+            const res = await fetch('/api/media-list');
+            if (!res.ok) throw new Error('Failed to fetch media list');
+            allMediaItems = await res.json();
+        } catch (e) {
+            if (folderDesc) folderDesc.textContent = 'Failed to load media items from server endpoint.';
+            return;
+        }
+
+        renderFiles('all', 'All Items');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(nav => {
+                    const el = nav as HTMLElement;
+                    el.style.background = 'transparent';
+                    el.style.border = 'none';
+                    el.style.fontWeight = 'normal';
+                });
+                
+                const target = item as HTMLElement;
+                target.style.background = '#cce8ff';
+                target.style.border = '1px solid #99d1ff';
+                target.style.fontWeight = '600';
+
+                const category = target.getAttribute('data-category') || 'all';
+                const labelText = target.textContent?.trim().replace(/\s*\(.*\)/, '') || 'Folder';
+
+                const windowPath = document.getElementById('window-path');
+                if (windowPath) windowPath.textContent = `📁 Libraries \\ Media Vault \\ ${labelText}`;
+                if (folderDesc) folderDesc.textContent = `Showing items filtered by: ${labelText}`;
+
+                renderFiles(category, labelText);
+            });
+        });
+    }
+
+    function renderFiles(categoryFilter: string, filterName: string) {
+        const fileContainer = document.getElementById('file-container');
+        const itemCount = document.getElementById('item-count');
+        if (!fileContainer) return;
+
+        const filtered = categoryFilter === 'all' 
+            ? allMediaItems 
+            : allMediaItems.filter(item => item.category === categoryFilter);
+
+        fileContainer.innerHTML = '';
+
+        if (filtered.length === 0) {
+            fileContainer.innerHTML = `<p style="font-size: 13px; color: #888; grid-column: 1 / -1;">No items found in this category.</p>`;
+            if (itemCount) itemCount.textContent = '0 items';
+            return;
+        }
+
+        filtered.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'library-card';
+            card.setAttribute('data-category', item.category);
+            card.style.cssText = 'display: flex; gap: 12px; padding: 10px; border: 1px solid #d9d9d9; border-radius: 4px; background: #fafafa; cursor: pointer; align-items: center;';
+            
+            card.innerHTML = `
+                <div style="font-size: 36px;">${item.icon}</div>
+                <div style="overflow: hidden;">
+                    <div style="font-weight: 600; font-size: 13px; color: #003399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.name}">${item.name}</div>
+                    <div style="font-size: 11px; color: #666; text-transform: capitalize;">${item.type} File</div>
+                    <div style="font-size: 10px; color: #888; margin-top: 4px;">Size: ${item.size}</div>
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                window.open(item.url, '_blank');
+            });
+
+            fileContainer.appendChild(card);
+        });
+
+        if (itemCount) itemCount.textContent = `${filtered.length} items`;
+    }
+
+    // Run on initial load and Astro client transitions
+    initMediaExplorer();
+    document.addEventListener('astro:after-swap', initMediaExplorer);
+</script>
+
+<style>
+    .library-card:hover {
+        background: #e5f3ff !important;
+        border-color: #99d1ff !important;
+    }
+</style>

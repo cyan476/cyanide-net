@@ -1,0 +1,159 @@
+---
+import Layout from '../layouts/Layout.astro';
+import avatarImg from '../assets/avatar.jpg';
+---
+
+<Layout title="whoami.exe - cyanide.net!" lastUpdated="26/07/2026" version="v1.5">
+  <main class="about-container">
+    <!-- Top Profile Section -->
+    <div class="profile-header">
+      <div class="avatar-box">
+        <img src={avatarImg.src} alt="Cyan476" class="avatar" />
+      </div>
+      <div class="profile-info">
+        <h1>Cyan476</h1>
+        <p class="role">Site Owner</p>
+        <p class="quote">"Your Average Gamer Person"</p>
+        
+        <!-- Colored Link Buttons (Kept non-Segoe font) -->
+        <div class="button-row">
+          <a href="https://youtube.com/@cyan476" class="btn youtube">Youtube</a>
+          <a href="https://bsky.app/profile/notcyan476.bsky.social" class="btn bluesky">Bluesky</a>
+          <a href="https://discord.com/invite/eJExmCEGVx" class="btn discord">Discord Server</a>
+          <a href="https://github.com/cyan476" class="btn github">Github</a>
+          <a href="https://reddit.com/user/Fancy-Witness5887" class="btn reddit">Reddit</a>
+          <a href="mailto:cyangamer476@gmail.com" class="btn email">Email</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Things I Like Section -->
+    <section class="content-section">
+      <div class="section-banner">Things I Like</div>
+      
+      <h2>Games I Like</h2>
+      <ul>
+        <li><strong>Among Us</strong> (peak deciding game)</li>
+        <li><strong>Minecraft</strong> (built a house in it, might make a media section and share the pics there)</li>
+        <li><strong>Geometry Dash</strong> (lwk good and also a excruciating game)</li>
+        <li><strong>Rec Room</strong> (ded 😔 RIP RR)</li>
+        <li><strong>Sledding Game</strong> (chugs horribly on my laptop, dunno why)</li>
+      </ul>
+
+      <h2>Music that i like</h2>
+      <p>Mostly just EDM, and Rock, and Metal, and Pop.</p>
+      <p>Like for example <a href="https://www.youtube.com/watch?v=DeXKIImngSw" class="link-highlight">TFWCACYT</a> by <a href="https://www.youtube.com/@RHYX555" class="link-highlight">@RHYX555</a></p>
+    </section>
+
+    <!-- What I Use Section -->
+    <section class="content-section">
+      <div class="section-banner">What I Use</div>
+      
+      <h2>Acer Nitro 5 (AN515-51-74D9)</h2>
+      <p>Debatable, but lowk, the specs are balanced, it has a 1050M, a i7-7700HQ, 8GB of DDR4 RAM, and plus, it has a 1TB HDD and a 128GB SSD</p>
+      <p>Genuinely good, but wish the 8GB could be bumped up to 16GB</p>
+
+      <h2>My Main Rig</h2>
+      <p>Meh. I say this ain't great for 12.000.000 IDR, it only has a 12th gen FRICKING i3, a 1650 (its better than the 1050M but i digress) and 16GB of ram (which is also better than the 8GB on the laptop, BUT I DIGRESS) overall i shouldve bought a better AMD Ryzen 5 and AMD RX for the same price, but i got this instead since there were no other prebuilts.</p>
+      <p class="ps-note"><em>P.S. I bought a prebuilt because the last time i touched RAM to clean a PC, it refused to turn back on. I am banned from touching components, BUT I DIGRESS!</em></p>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  /* Base Container & Segoe Font for everything except buttons */
+  .about-container {
+    padding: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #000;
+  }
+
+  /* Profile Header */
+  .profile-header {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .avatar {
+    width: 220px;
+    border: 2px solid #000;
+  }
+
+  .profile-info h1 {
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  .role {
+    margin: 2px 0;
+    font-weight: bold;
+  }
+
+  .quote {
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+
+  /* Retro Colored Buttons (Kept explicit non-Segoe styling if preferred) */
+  .button-row {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: #fff;
+    border: 1px solid #000;
+    box-shadow: 2px 2px 0px #000;
+    font-family: monospace, sans-serif;
+  }
+
+  .btn.youtube { background-color: #ff0000; }
+  .btn.bluesky { background-color: #0085ff; }
+  .btn.discord { background-color: #5865F2; }
+  .btn.github { background-color: #ffffff; color: #000; }
+  .btn.reddit { background-color: #ff4500; }
+  .btn.email { background-color: #ff2222; }
+
+  /* Bigger, Deeper Section Banners */
+  .section-banner {
+    background: linear-gradient(to bottom, #30d5ff, #0088cc);
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+    padding: 12px;
+    border: 2px solid #000;
+    font-size: 1.3rem;
+    margin: 35px 0 15px 0;
+    text-shadow: 2px 2px 0px #003366;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.6);
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+
+  ul {
+    margin-top: 5px;
+    padding-left: 20px;
+  }
+
+  .link-highlight {
+    color: #00aa00;
+    text-decoration: underline;
+  }
+
+  .ps-note {
+    font-size: 0.9rem;
+    color: #333;
+  }
+</style>

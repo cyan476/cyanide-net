@@ -1,0 +1,224 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import avatarImg from '../assets/avatar.jpg';
+import bgImg from '../assets/background.jpg';
+import tvMusicFile from '../assets/mii_vtele.wav';
+import padMusicFile from '../assets/mii_vpad.wav';
+
+interface Props {
+	title: string;
+	lastUpdated?: string;
+	version?: string;
+}
+const { title, lastUpdated = "18/07/2026", version = "v1.0" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{title}</title>
+		
+		{/* The ultimate seamless transition router */}
+		<ClientRouter />
+
+		{/* Inline script to check if this exact page load was a browser refresh */}
+		<script is:inline>
+			const perfEntries = performance.getEntriesByType("navigation");
+			const isReload = perfEntries.length > 0 && perfEntries[0].type === "reload";
+
+			if (isReload) {
+				sessionStorage.setItem('is-reloaded', 'true');
+				sessionStorage.removeItem('site-entered');
+			} else {
+				sessionStorage.removeItem('is-reloaded');
+			}
+		</script>
+
+		<style>
+			body {
+				font-family: 'Bahnschrift', Arial, sans-serif;
+			}
+			nav {
+				font-family: 'Trebuchet MS', Arial, sans-serif;
+			}
+			main :global(p) {
+				font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+				font-size: 18px;
+			}
+		</style>
+	</head>
+	<body style={`margin: 0; background-image: url(${bgImg.src}); background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh; display: flex; flex-direction: column;`}>
+		
+		{/* Dual Hidden Audio Players for TV and GamePad streams with native loop points calculated */}
+		<audio id="tv-music" src={tvMusicFile} transition:persist></audio>
+		<audio id="pad-music" src={padMusicFile} transition:persist></audio>
+
+		{/* Entrance Overlay Screen (persists so it doesn't pop back up when clicking links) */}
+		<div id="entrance-overlay" transition:persist style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; transition: opacity 0.5s ease;">
+			<h1 style="font-size: 48px; margin-bottom: 10px; font-weight: 400;">cyanide.net!</h1>
+			<p style="font-size: 18px; margin-bottom: 24px; font-family: 'Segoe UI', sans-serif;">click to enter</p>
+			<button id="enter-btn" style="background: linear-gradient(to bottom, #00ffff, #0080ff); border: 2px solid white; padding: 12px 32px; font-size: 20px; font-family: 'Bahnschrift', Arial, sans-serif; font-weight: bold; color: black; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,255,255,0.4);">Enter Site</button>
+		</div>
+
+		<script>
+			function initSite() {
+				const enterBtn = document.getElementById('enter-btn');
+				const overlay = document.getElementById('entrance-overlay') as HTMLElement;
+				const tvMusic = document.getElementById('tv-music') as HTMLAudioElement;
+				const padMusic = document.getElementById('pad-music') as HTMLAudioElement;
+				const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
+
+				const tvLoopStart = 3.136;
+				const tvLoopEnd = 75.5169;
+				const padLoopStart = 4.928;
+				const padLoopEnd = 77.30896;
+
+				const savedVolume = localStorage.getItem('player_volume');
+				const initialVol = savedVolume !== null ? parseFloat(savedVolume) : 0.25;
+
+				if (volumeSlider) volumeSlider.value = initialVol.toString();
+				if (tvMusic) tvMusic.volume = initialVol;
+				if (padMusic) padMusic.volume = initialVol;
+
+				const hasEntered = sessionStorage.getItem('site-entered') === 'true';
+
+				if (!hasEntered) {
+					if (tvMusic) {
+						tvMusic.pause();
+						tvMusic.currentTime = 0;
+					}
+					if (padMusic) {
+						padMusic.pause();
+						padMusic.currentTime = 0;
+					}
+				}
+
+				// Manual sample-accurate looping logic
+				if (tvMusic) {
+					tvMusic.ontimeupdate = () => {
+						if (tvMusic.currentTime >= tvLoopEnd) {
+							tvMusic.currentTime = tvLoopStart;
+							const entered = sessionStorage.getItem('site-entered') === 'true';
+							if (entered) {
+								tvMusic.play().catch(() => {});
+							}
+						}
+					};
+				}
+
+				if (padMusic) {
+					padMusic.ontimeupdate = () => {
+						if (padMusic.currentTime >= padLoopEnd) {
+							padMusic.currentTime = padLoopStart;
+							const entered = sessionStorage.getItem('site-entered') === 'true';
+							if (entered) {
+								padMusic.play().catch(() => {});
+							}
+						}
+					};
+				}
+
+				const isReloaded = sessionStorage.getItem('is-reloaded') === 'true';
+				
+				if (hasEntered) {
+					if (overlay) overlay.style.display = 'none';
+				} else if (!isReloaded && overlay) {
+					overlay.style.display = 'none';
+					sessionStorage.setItem('site-entered', 'true');
+				} else if (isReloaded && overlay) {
+					overlay.style.display = 'flex';
+					overlay.style.opacity = '1';
+					if (tvMusic) tvMusic.pause();
+					if (padMusic) padMusic.pause();
+				}
+
+				if (enterBtn) {
+					const newBtn = enterBtn.cloneNode(true);
+					enterBtn.parentNode?.replaceChild(newBtn, enterBtn);
+
+					newBtn.addEventListener('click', () => {
+						sessionStorage.setItem('site-entered', 'true');
+
+						const currentVol = volumeSlider ? parseFloat(volumeSlider.value) : 0.25;
+
+						if (tvMusic && padMusic) {
+							tvMusic.volume = currentVol;
+							padMusic.volume = currentVol;
+							
+							tvMusic.currentTime = 0;
+							padMusic.currentTime = 0;
+							Promise.all([
+								tvMusic.play(),
+								padMusic.play()
+							]).catch(e => console.log("Audio play blocked:", e));
+						}
+
+						if (overlay) {
+							overlay.style.opacity = '0';
+							setTimeout(() => {
+								overlay.style.display = 'none';
+								sessionStorage.removeItem('is-reloaded');
+							}, 500);
+						}
+					});
+				}
+
+				volumeSlider?.addEventListener('input', (e) => {
+					const target = e.target as HTMLInputElement;
+					const vol = parseFloat(target.value);
+					localStorage.setItem('player_volume', vol.toString());
+
+					if (tvMusic) tvMusic.volume = vol;
+					if (padMusic) padMusic.volume = vol;
+				});
+			}
+
+			initSite();
+			document.addEventListener('astro:after-swap', initSite);
+		</script>
+		
+		{/* Step 1: Top Bar */}
+		<header style="width: 100%; background: linear-gradient(to bottom, #00ffff, #0080ff); padding: 22px 32px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+			<div>
+				<h1 style="font-size: 64px; font-weight: 400; color: black; margin: 0; line-height: 1.1;">cyanide.net!</h1>
+				<p style="font-size: 24px; font-weight: 400; color: black; margin: 4px 0 0 0;">the home of cyan's web!</p>
+			</div>
+
+			<div style="border: 2px solid black; background: white; padding: 2px; border-radius: 6px; width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+				<img src={avatarImg.src} alt="Cyan" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+				<span style="font-size: 0.85rem; color: black; font-weight: bold; display: none;">[Cyan]</span>
+			</div>
+		</header>
+
+		{/* Step 2: Navigation Bar */}
+		<nav style="background: linear-gradient(to right, #e0e0e0, #f5f5f5, #d0d0d0); border-bottom: 2px solid #888; padding: 12px 32px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center;">
+			<ul style="display: flex; flex-wrap: wrap; gap: 28px; list-style: none; margin: 0; padding: 0; font-size: 18px; font-weight: 400; align-items: center;">
+				<li><a href="/" style="color: black; text-decoration: none;">Home</a></li>
+				<li><a href="/about" style="color: black; text-decoration: none;">About</a></li>
+				<li><a href="/posts" style="color: black; text-decoration: none;">Posts</a></li>
+				<li><a href="/media" style="color: black; text-decoration: none;">Media</a></li>
+				<li><a href="https://your-shop-domain.com" target="_blank" style="color: black; text-decoration: none;">Shop ↗</a></li>
+				<li><a href="/cookie" style="color: black; text-decoration: none;">Free Cookie! 🍪</a></li>
+			</ul>
+		</nav>
+
+		{/* Step 3: Full-width Content Box */}
+		<main style="flex: 1; width: 100%; margin: 0; padding: 48px; color: black; font-weight: 400; background: linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(0,255,255,0.45) 50%); box-sizing: border-box;">
+			<slot />
+		</main>
+
+		{/* Step 4: Footer */}
+		<footer style="width: 100%; background: linear-gradient(to top, #00ffff, #0080ff); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; color: black; font-size: 16px; border-top: 2px solid rgba(0,0,0,0.2); box-sizing: border-box; flex-wrap: wrap; gap: 10px;">
+			<p style="margin: 0;">Last updated: {lastUpdated} | {version} | Made with love by Cyan, and <a href="https://astro.build" target="_blank" style="color: #00ff00; text-decoration: underline;">Astro</a>, Hosted on <a href="https://vercel.com" target="_blank" style="color: #00ff00; text-decoration: underline;">Vercel</a>.</p>
+			
+			{/* Volume Slider Control */}
+			<div style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+				<span>🔊 Vol:</span>
+				<input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.25" style="cursor: pointer;" />
+			</div>
+		</footer>
+
+	</body>
+</html>

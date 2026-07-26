@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: linear-gradient(to bottom, #00FFFF, #0080FF);
+  background-attachment: fixed;
+  color: #000000;
+  font-family: 'Bahnschrift', Arial, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Fallback pure CSS classes in case Tailwind acts up */
+.site-header {
+  background: linear-gradient(to right, #0044cc, #3388ff, #0044cc);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.site-nav {
+  background: #ffffff;
+  border-bottom: 2px solid #888888;
+  padding: 0.5rem 1rem;
+}
+
+.site-nav ul {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.site-nav a {
+  color: #000000;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.site-nav a:hover {
+  text-decoration: underline;
+}
+
+.site-footer {
+  background: linear-gradient(to right, #000066, #9900cc, #000066);
+  color: #ffffff;
+  font-size: 0.75rem;
+  padding: 0.75rem;
+  text-align: center;
+  border-top: 2px solid #00FFFF;
+}
